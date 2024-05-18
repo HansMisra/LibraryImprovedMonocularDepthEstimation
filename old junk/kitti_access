@@ -1,0 +1,109 @@
+import os
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+def load_image(file_path):
+    """Load an image from a file."""
+    image = cv2.imread(file_path, cv2.IMREAD_COLOR)
+    if image is None:
+        raise FileNotFoundError(f"Image file not found: {file_path}")
+    return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+def load_disparity(file_path):
+    """Load a disparity map from a file and convert to float type."""
+    disparity = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
+    if disparity is None:
+        raise FileNotFoundError(f"Disparity file not found: {file_path}")
+    return disparity.astype(np.float32) / 256.0
+
+def calculate_depth_map(disparity, baseline, focal_length):
+    """Convert disparity to depth map using the given baseline and focal length."""
+    with np.errstate(divide='ignore', invalid='ignore'):
+        depth_map = (focal_length * baseline) / disparity
+        depth_map[disparity == 0] = np.inf
+    return depth_map
+
+def normalize_depth_map(depth_map):
+    """Normalize the depth map for better visualization."""
+    valid_depths = depth_map[depth_map != np.inf]
+    max_depth = np.max(valid_depths)
+    min_depth = np.min(valid_depths)
+    normalized_depth_map = (depth_map - min_depth) / (max_depth - min_depth)
+    normalized_depth_map[depth_map == np.inf] = 0
+    return normalized_depth_map
+
+def display_depth_map(depth_map):
+    """Display the normalized depth map."""
+    normalized_depth_map = normalize_depth_map(depth_map)
+    plt.imshow(normalized_depth_map, cmap='plasma')
+    plt.colorbar()
+    plt.title('Normalized Depth Map')
+    plt.show()
+
+def read_calibration(calib_dir, file_index):
+    """Read calibration data from a file."""
+    calib_path = os.path.join(calib_dir, 'calib_cam_to_cam', file_index + '.txt')
+    try:
+        with open(calib_path, 'r') as file:
+            for line in file:
+                if 'P_rect_00' in line:
+                    parts = line.strip().split()
+                    fx = float(parts[1])
+                    fy = float(parts[6])
+                    cx = float(parts[3])
+                    cy = float(parts[7])
+                    Tx = float(parts[4])
+                    focal_length = (fx + fy) / 2
+                    baseline = -Tx / fx if Tx != 0 else 0.54
+                    break
+        return focal_length, baseline
+    except Exception as e:
+        print(f"Error reading calibration file: {e}")
+        raise
+
+def load_ground_truth_disparity(file_path):
+    """Load a ground truth disparity map from a file and convert to float type."""
+    disparity_gt = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
+    if disparity_gt is None:
+        raise FileNotFoundError(f"Ground truth disparity file not found: {file_path}")
+    return disparity_gt.astype(np.float32) / 256.0  # Convert uint16 to actual disparity values
+
+
+def main():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = os.path.join(script_dir, 'kitti_data', 'data_scene_flow', 'training')
+    calib_dir = os.path.join(script_dir, 'kitti_data', 'data_scene_flow_calib', 'training')
+    file_index = '000000'
+
+    # Load calibration data
+    focal_length, baseline = read_calibration(calib_dir, file_index)
+
+    # File paths for images and disparity map
+    left_image_path = os.path.join(data_dir, 'image_2', file_index + '_10.png')
+    disparity_path = os.path.join(data_dir, 'disp_occ_0', file_index + '_10.png')
+    
+    # Load images and disparity
+    try:
+        left_image = load_image(left_image_path)
+        disparity = load_disparity(disparity_path)
+
+        # Calculate and display depth map
+        depth_map = calculate_depth_map(disparity, baseline, focal_length)
+        plt.figure(figsize=(10, 7))
+        plt.subplot(1, 3, 1)
+        plt.imshow(left_image)
+        plt.title('Left Image')
+        plt.subplot(1, 3, 2)
+        plt.imshow(disparity, cmap='viridis')
+        plt.title('Disparity Map')
+        plt.subplot(1, 3, 3)
+        display_depth_map(depth_map)  # This now uses the normalized display
+
+    except FileNotFoundError as e:
+        print(e)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+if __name__ == '__main__':
+    main()
