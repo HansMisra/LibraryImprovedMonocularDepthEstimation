@@ -9,13 +9,19 @@ from torchvision.transforms import ToTensor
 from torch.utils.data import DataLoader
 import numpy as np
 import torch
+import sys
+
+# Set the working directory to the script's directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
+
+print(f"Current working directory: {os.getcwd()}")
 
 
 def main():
-    data_dir = r'C:\Users\Hans Kirtan Misra\Documents\Professional\UMD\MSML\MDE_v2\LibraryImprovedMonocularDepthEstimation\src_code\kitti_data\data_scene_flow\testing\image_2'
-    disparity_dir = r'C:\Users\Hans Kirtan Misra\Documents\Professional\UMD\MSML\MDE_v2\LibraryImprovedMonocularDepthEstimation\src_code\kitti_data\data_scene_flow\testing\test_disp'
-    model_path = r'C:\Users\Hans Kirtan Misra\Documents\Professional\UMD\MSML\MDE_v2\LibraryImprovedMonocularDepthEstimation\src_code\model_weights.pth'
-
+    data_dir = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'image_2')
+    disparity_dir = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'test_disp')
+    model_path = os.path.join('model_weights.pth')
     # Check if model weights file exists
     if not os.path.exists(model_path):
         print("Model weights not found. Please train the model first.")

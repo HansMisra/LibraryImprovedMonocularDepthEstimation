@@ -65,8 +65,8 @@ def save_disparity_maps(image_dir1, image_dir2, output_dir):
         print(f'Saved disparity map to {output_path}')
 
 # Example usage
-image_dir1 = r'C:\Users\Hans Kirtan Misra\Documents\Professional\UMD\MSML\MDE_v2\LibraryImprovedMonocularDepthEstimation\src_code\kitti_data\data_scene_flow\testing\image_2'
-image_dir2 = r'C:\Users\Hans Kirtan Misra\Documents\Professional\UMD\MSML\MDE_v2\LibraryImprovedMonocularDepthEstimation\src_code\kitti_data\data_scene_flow\testing\image_3'
-output_dir = r'C:\Users\Hans Kirtan Misra\Documents\Professional\UMD\MSML\MDE_v2\LibraryImprovedMonocularDepthEstimation\src_code\kitti_data\data_scene_flow\testing\test_disp'  # Path where disparity maps will be saved
+image_dir1 = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'image_2')
+image_dir2 = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'image_3')
+output_dir = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'test_disp')
 
 save_disparity_maps(image_dir1, image_dir2, output_dir)

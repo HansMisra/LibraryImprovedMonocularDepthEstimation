@@ -6,6 +6,7 @@ from torchvision import transforms
 from PIL import Image
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 
 def load_image(file_path):
@@ -20,6 +21,20 @@ def load_disparity(file_path):
         raise FileNotFoundError(f"Disparity file not found: {file_path}")
     return disparity.astype(np.float32) / 256.0  # Normalize disparity
 
+
+
+def display_image_results(image_infos):
+    fig, axs = plt.subplots(len(image_infos), 3, figsize=(15, 5 * len(image_infos)))
+    print(f"image_infos content: {image_infos}")
+    for idx, (images, true_disp, pred_disp, error, percentile_acc) in enumerate(image_infos):  # Note the added percentile_acc
+        axs[idx, 0].imshow(images[0].permute(1, 2, 0))
+        axs[idx, 0].set_title(f'Original Image - MSE Error: {error:.2f}')
+        axs[idx, 1].imshow(true_disp[0].squeeze(), cmap='plasma')
+        axs[idx, 1].set_title('Ground Truth Disparity')
+        axs[idx, 2].imshow(pred_disp[0].squeeze(), cmap='plasma')
+        axs[idx, 2].set_title('Predicted Disparity')
+        # Optionally display percentile_acc if needed
+    plt.show()
 
 
 

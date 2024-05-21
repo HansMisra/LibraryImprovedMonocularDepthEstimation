@@ -5,6 +5,11 @@ from model import DepthNet
 import torch.optim as optim
 import os
 import torch.nn.functional as F
+import sys
+
+# Set the working directory to the script's directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(script_dir)
 
 def train(image_dir, disparity_dir, epochs=10, batch_size=8, save_path=None):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -29,7 +34,8 @@ def train(image_dir, disparity_dir, epochs=10, batch_size=8, save_path=None):
             print(f"Model weights saved to {save_path}")
 
 if __name__ == '__main__':
-    image_dir = 'C:/Users/Hans Kirtan Misra/Documents/Professional/UMD/MSML/MDE_v2/LibraryImprovedMonocularDepthEstimation/src_code/kitti_data/data_scene_flow/training/image_2'
-    disparity_dir = 'C:/Users/Hans Kirtan Misra/Documents/Professional/UMD/MSML/MDE_v2/LibraryImprovedMonocularDepthEstimation/src_code/kitti_data/data_scene_flow/training/disp_occ_0'
-    model_save_path = 'C:/Users/Hans Kirtan Misra/Documents/Professional/UMD/MSML/MDE_v2/LibraryImprovedMonocularDepthEstimation/src_code/model_weights.pth'
+    image_dir = os.path.join('kitti_data', 'data_scene_flow', 'training', 'image_2')
+    disparity_dir = os.path.join('kitti_data', 'data_scene_flow', 'training', 'disp_occ_0')
+    model_save_path = os.path.join('model_weights.pth')
+
     train(image_dir, disparity_dir, save_path=model_save_path)
