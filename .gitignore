@@ -1,3 +1,16 @@
 ignorefolder/
 
 src_code/kitti_data/
+src_code/__pycache__/
+
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+*.pth
+*.pt
+*.h5
+*.ckpt
+
+.DS_Store
