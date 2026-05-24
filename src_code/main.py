@@ -1,7 +1,7 @@
 #main module
 
 import os
-import load_model, kitti_data, data_utils, evaluate, train
+import load_model, data_utils, evaluate, train
 from evaluate import evaluate_model, display_image_results, device
 from load_model import load_model
 from data_utils import KITTIDataset
