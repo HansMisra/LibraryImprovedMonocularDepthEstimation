@@ -70,3 +70,6 @@ image_dir2 = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'image_3')
 output_dir = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'test_disp')
 
 save_disparity_maps(image_dir1, image_dir2, output_dir)
+
+if __name__ == "__main__":
+    save_disparity_maps(image_dir1, image_dir2, output_dir)
