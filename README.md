@@ -27,27 +27,16 @@ This project trains a small PyTorch encoder-decoder model (`DepthNet`) to predic
 
 Place KITTI scene flow data under:
 
-```bash
-src_code/kitti_data/data_scene_flow/
-```
+`src_code/kitti_data/data_scene_flow/`
 
-Then run training from the `src_code` folder:
+From `src_code`, run:
 
 ```bash
-python train.py
-```
-
-To generate stereo-derived test disparity maps:
-
-```bash
-python create_test_disp.py
-```
-
-To run evaluation:
-
-```bash
-python run_evaluation.py
-```
+python main.py train
+python main.py generate-test-disp
+python main.py evaluate
+# Or run all
+python main.py all
 
 Depending on the local dataset location, paths inside the scripts may need to be updated before running.
 

@@ -1,47 +1,138 @@
-#main module
-
+import argparse
 import os
-import load_model, data_utils, evaluate, train
-from evaluate import evaluate_model, display_image_results, device
-from load_model import load_model
-from data_utils import KITTIDataset
-from torchvision.transforms import ToTensor
-from torch.utils.data import DataLoader
-import numpy as np
-import torch
-import sys
 
-# Set the working directory to the script's directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
+from train import train
+from run_evaluation import run_evaluation
+from create_test_disp import save_disparity_maps
 
-print(f"Current working directory: {os.getcwd()}")
+
+def get_paths():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    paths = {
+        "script_dir": script_dir,
+        "train_images": os.path.join(
+            script_dir,
+            "kitti_data",
+            "data_scene_flow",
+            "training",
+            "image_2"
+        ),
+        "train_disparities": os.path.join(
+            script_dir,
+            "kitti_data",
+            "data_scene_flow",
+            "training",
+            "disp_occ_0"
+        ),
+        "test_left_images": os.path.join(
+            script_dir,
+            "kitti_data",
+            "data_scene_flow",
+            "testing",
+            "image_2"
+        ),
+        "test_right_images": os.path.join(
+            script_dir,
+            "kitti_data",
+            "data_scene_flow",
+            "testing",
+            "image_3"
+        ),
+        "test_disparities": os.path.join(
+            script_dir,
+            "kitti_data",
+            "data_scene_flow",
+            "testing",
+            "test_disp"
+        ),
+        "model_weights": os.path.join(script_dir, "model_weights.pth")
+    }
+
+    return paths
+
+
+def check_dir(path, label):
+    if not os.path.exists(path):
+        print(f"{label} not found: {path}")
+        return False
+    return True
+
+
+def train_model(paths, epochs, batch_size):
+    if not check_dir(paths["train_images"], "Training image directory"):
+        return
+
+    if not check_dir(paths["train_disparities"], "Training disparity directory"):
+        return
+
+    train(
+        paths["train_images"],
+        paths["train_disparities"],
+        epochs=epochs,
+        batch_size=batch_size,
+        save_path=paths["model_weights"]
+    )
+
+
+def generate_test_disparities(paths):
+    if not check_dir(paths["test_left_images"], "Test left image directory"):
+        return
+
+    if not check_dir(paths["test_right_images"], "Test right image directory"):
+        return
+
+    os.makedirs(paths["test_disparities"], exist_ok=True)
+
+    save_disparity_maps(
+        paths["test_left_images"],
+        paths["test_right_images"],
+        paths["test_disparities"]
+    )
 
 
 def main():
-    data_dir = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'image_2')
-    disparity_dir = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'test_disp')
-    model_path = os.path.join('model_weights.pth')
-    # Check if model weights file exists
-    if not os.path.exists(model_path):
-        print("Model weights not found. Please train the model first.")
-        return
+    parser = argparse.ArgumentParser(
+        description="KITTI depth/disparity estimation project entry point."
+    )
 
-    model = load_model(model_path, 'depthnet', device=device)
-    dataset = KITTIDataset(data_dir, disparity_dir, transform=ToTensor())
-    data_loader = DataLoader(dataset, batch_size=4, shuffle=False)
+    parser.add_argument(
+        "command",
+        choices=["train", "generate-test-disp", "evaluate", "all"],
+        help="Pipeline step to run."
+    )
 
-    errors, accuracies, precisions, image_infos = evaluate_model(model, data_loader, device)
-    
-    max_error_idx = np.argmax(errors)
-    min_error_idx = np.argmin(errors)
-    median_error_idx = np.argsort(errors)[len(errors)//2]
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=10,
+        help="Number of training epochs."
+    )
 
-    display_image_results([image_infos[max_error_idx], image_infos[min_error_idx], image_infos[median_error_idx]])
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=8,
+        help="Training batch size."
+    )
 
-    print(f'Average Accuracy: {np.mean(accuracies):.2f}, Average Precision: {np.mean(precisions):.2f}')
-    print(f'Max Error: {errors[max_error_idx]}, Min Error: {errors[min_error_idx]}, Median Error: {errors[median_error_idx]}')
+    args = parser.parse_args()
+    paths = get_paths()
 
-if __name__ == '__main__':
+    if args.command == "train":
+        train_model(paths, args.epochs, args.batch_size)
+
+    elif args.command == "generate-test-disp":
+        generate_test_disparities(paths)
+
+    elif args.command == "evaluate":
+        run_evaluation()
+
+    elif args.command == "all":
+        train_model(paths, args.epochs, args.batch_size)
+        generate_test_disparities(paths)
+        run_evaluation()
+
+
+if __name__ == "__main__":
     main()
-

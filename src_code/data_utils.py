@@ -5,92 +5,112 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image
 import numpy as np
-import math
-import matplotlib.pyplot as plt
 
 
 def load_image(file_path):
     image = cv2.imread(file_path, cv2.IMREAD_COLOR)
     if image is None:
         raise FileNotFoundError(f"Image file not found: {file_path}")
-    return Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(image)
+
 
 def load_disparity(file_path):
     disparity = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
     if disparity is None:
         raise FileNotFoundError(f"Disparity file not found: {file_path}")
-    return disparity.astype(np.float32) / 256.0  # Normalize disparity
 
-
-
-def display_image_results(image_infos):
-    fig, axs = plt.subplots(len(image_infos), 3, figsize=(15, 5 * len(image_infos)))
-    print(f"image_infos content: {image_infos}")
-    for idx, (images, true_disp, pred_disp, error, percentile_acc) in enumerate(image_infos):  # Note the added percentile_acc
-        axs[idx, 0].imshow(images[0].permute(1, 2, 0))
-        axs[idx, 0].set_title(f'Original Image - MSE Error: {error:.2f}')
-        axs[idx, 1].imshow(true_disp[0].squeeze(), cmap='plasma')
-        axs[idx, 1].set_title('Ground Truth Disparity')
-        axs[idx, 2].imshow(pred_disp[0].squeeze(), cmap='plasma')
-        axs[idx, 2].set_title('Predicted Disparity')
-        # Optionally display percentile_acc if needed
-    plt.show()
-
-
+    disparity = disparity.astype(np.float32) / 256.0
+    return Image.fromarray(disparity)
 
 
 class HypotenuseSquareTransform:
     def __init__(self, target_size=1300, rotate_degrees=0):
-        self.target_size = target_size  # A fixed size that is known to be larger than any image dimension after rotation
+        self.target_size = target_size
         self.rotate_degrees = rotate_degrees
 
     def __call__(self, img):
-        # Calculate scaling factor to ensure the image covers the target size
         width, height = img.size
         scaling_factor = self.target_size / max(width, height)
+
         new_width = int(width * scaling_factor)
         new_height = int(height * scaling_factor)
+
         img = img.resize((new_width, new_height), Image.NEAREST)
 
-        # Center the image in a target_size x target_size square
-        pad_horizontal = (self.target_size - new_width) // 2
-        pad_vertical = (self.target_size - new_height) // 2
+        pad_horizontal = max((self.target_size - new_width) // 2, 0)
+        pad_vertical = max((self.target_size - new_height) // 2, 0)
+
         img = transforms.Pad((pad_horizontal, pad_vertical), fill=0)(img)
 
-        # Rotate the image if necessary
         if self.rotate_degrees != 0:
             img = img.rotate(self.rotate_degrees, fillcolor=0)
 
-        # Ensure the image is exactly the target size by target size
         img = img.resize((self.target_size, self.target_size), Image.NEAREST)
         return img
 
-# Apply the transformation
-image_transforms = HypotenuseSquareTransform(rotate_degrees=45)
 
+image_transforms = HypotenuseSquareTransform(rotate_degrees=45)
 
 
 class KITTIDataset(Dataset):
     def __init__(self, image_dir, disparity_dir, transform=None):
         self.image_dir = image_dir
         self.disparity_dir = disparity_dir
-        self.transform = image_transforms
-        self.image_paths = [os.path.join(image_dir, f) for f in sorted(os.listdir(image_dir)) if f.endswith("_10.png")]
-        self.disparity_paths = [os.path.join(disparity_dir, f.replace('_10.png', '_10.png')) for f in sorted(os.listdir(image_dir)) if f.endswith("_10.png")]
+        self.transform = transform if transform is not None else image_transforms
+        self.to_tensor = transforms.ToTensor()
+
+        if not os.path.exists(image_dir):
+            raise FileNotFoundError(f"Image directory not found: {image_dir}")
+
+        if not os.path.exists(disparity_dir):
+            raise FileNotFoundError(f"Disparity directory not found: {disparity_dir}")
+
+        image_files = sorted(
+            f for f in os.listdir(image_dir)
+            if f.endswith("_10.png")
+        )
+
+        self.samples = []
+
+        for image_file in image_files:
+            image_path = os.path.join(image_dir, image_file)
+            disparity_path = os.path.join(disparity_dir, image_file)
+
+            if os.path.exists(disparity_path):
+                self.samples.append((image_path, disparity_path))
+
+        if not self.samples:
+            raise ValueError(
+                "No matching image/disparity pairs found. "
+                "Expected matching *_10.png files in both directories."
+            )
 
     def __len__(self):
-        return len(self.image_paths)
+        return len(self.samples)
 
     def __getitem__(self, idx):
-        image_path = self.image_paths[idx]
-        disparity_path = self.disparity_paths[idx]
+        image_path, disparity_path = self.samples[idx]
+
         image = load_image(image_path)
         disparity = load_disparity(disparity_path)
+
         if self.transform:
             image = self.transform(image)
-            disparity = self.transform(Image.fromarray(disparity))
-        return {'image': transforms.ToTensor()(image), 'disparity': torch.from_numpy(np.array(disparity)).unsqueeze(0)}
+            disparity = self.transform(disparity)
 
-# Define the transformations
-image_transforms = HypotenuseSquareTransform(rotate_degrees=45)
+        image_tensor = image if torch.is_tensor(image) else self.to_tensor(image)
 
+        if torch.is_tensor(disparity):
+            disparity_tensor = disparity
+            if disparity_tensor.ndim == 2:
+                disparity_tensor = disparity_tensor.unsqueeze(0)
+        else:
+            disparity_array = np.array(disparity, dtype=np.float32)
+            disparity_tensor = torch.from_numpy(disparity_array).unsqueeze(0)
+
+        return {
+            "image": image_tensor.float(),
+            "disparity": disparity_tensor.float()
+        }

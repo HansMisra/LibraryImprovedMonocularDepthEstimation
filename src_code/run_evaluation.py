@@ -8,7 +8,7 @@ from data_utils import KITTIDataset
 from load_model import load_model
 from evaluate import evaluate_model, display_image_results
 
-
+ 
 def run_evaluation():
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,16 +48,15 @@ def run_evaluation():
 
     model = load_model(model_path, "depthnet", device=device)
 
-    dataset = KITTIDataset(
+    dataset = KITTIDataset( 
         data_dir,
-        disparity_dir,
-        transform=ToTensor()
+        disparity_dir
     )
 
     data_loader = DataLoader(
         dataset,
         batch_size=4,
-        shuffle=False
+        shuffle=False   
     )
 
     errors, accuracies, precisions, percentile_accuracies, image_infos = evaluate_model(
