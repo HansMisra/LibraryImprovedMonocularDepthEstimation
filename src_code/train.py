@@ -6,6 +6,7 @@ import torch.optim as optim
 import os
 import torch.nn.functional as F
 import sys
+from tqdm import tqdm
 
 # Set the working directory to the script's directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,15 +21,43 @@ def train(image_dir, disparity_dir, epochs=10, batch_size=8, save_path=None):
     criterion = torch.nn.MSELoss().to(device)
 
     for epoch in range(epochs):
-        for batch in dataloader:
-            images, targets = batch['image'].to(device), batch['disparity'].to(device)
+        running_loss = 0.0
+
+        progress = tqdm(
+            dataloader,
+            desc=f"Epoch {epoch + 1}/{epochs}",
+            unit="batch",
+            leave=False
+        )
+
+        for batch_idx, batch in enumerate(progress, start=1):
+            images = batch["image"].to(device)
+            targets = batch["disparity"].to(device)
+
             optimizer.zero_grad()
             outputs = model(images)
-            outputs_resized = F.interpolate(outputs, size=targets.shape[2:], mode='bilinear', align_corners=True)
+
+            outputs_resized = F.interpolate(
+                outputs,
+                size=targets.shape[2:],
+                mode="bilinear",
+                align_corners=True
+            )
+
             loss = criterion(outputs_resized, targets)
             loss.backward()
             optimizer.step()
-        print(f"Epoch {epoch}, Loss: {loss.item()}")
+
+            running_loss += loss.item()
+
+            progress.set_postfix({
+                "batch": f"{batch_idx}/{len(dataloader)}",
+                "loss": f"{loss.item():.4f}"
+            })
+
+        avg_loss = running_loss / len(dataloader)
+        print(f"Epoch {epoch + 1}/{epochs} complete | avg loss: {avg_loss:.4f}")
+
         if save_path:
             torch.save(model.state_dict(), save_path)
             print(f"Model weights saved to {save_path}")

@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 def preprocess_image(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
@@ -49,7 +50,13 @@ def save_disparity_maps(image_dir1, image_dir2, output_dir):
     left_image_files.sort()  
     right_image_files.sort()  
 
-    for left_image_file, right_image_file in zip(left_image_files, right_image_files):
+    pairs = list(zip(left_image_files, right_image_files))
+
+    for left_image_file, right_image_file in tqdm(
+        pairs,
+        desc="Generating disparity maps",
+        unit="map"
+    ):
         left_image_path = os.path.join(image_dir1, left_image_file)
         right_image_path = os.path.join(image_dir2, right_image_file)
 
@@ -59,10 +66,9 @@ def save_disparity_maps(image_dir1, image_dir2, output_dir):
         disparity = generate_disparity_map(left_image, right_image)
         disparity_filtered = apply_wls_filter(left_image, disparity)
 
-        output_filename = os.path.splitext(left_image_file)[0] + '.png'
+        output_filename = os.path.splitext(left_image_file)[0] + ".png"
         output_path = os.path.join(output_dir, output_filename)
         cv2.imwrite(output_path, disparity_filtered)
-        print(f'Saved disparity map to {output_path}')
 
 # Example usage
 image_dir1 = os.path.join('kitti_data', 'data_scene_flow', 'testing', 'image_2')

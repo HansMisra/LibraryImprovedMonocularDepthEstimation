@@ -4,6 +4,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, accuracy_score, precision_score
+from tqdm import tqdm
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -63,7 +64,7 @@ def evaluate_model(model, data_loader, device, transformation_matrix=None, evalu
     image_infos = []
 
     with torch.no_grad():
-        for batch in data_loader:
+        for batch in tqdm(data_loader, desc="Evaluating", unit="batch", leave=False):
             images = batch["image"].to(device)
             true_disparities = batch["disparity"].to(device)
 
@@ -83,7 +84,8 @@ def evaluate_model(model, data_loader, device, transformation_matrix=None, evalu
             true_flat = true_disparities.view(-1).cpu().numpy()
             pred_flat = predictions.view(-1).cpu().numpy()
 
-            rmse_error = mean_squared_error(true_flat, pred_flat, squared=False)
+            mse_error = mean_squared_error(true_flat, pred_flat)
+            rmse_error = np.sqrt(mse_error)
             binary_true = true_flat > 0.5
             binary_pred = pred_flat > 0.5
 
