@@ -46,6 +46,11 @@ def get_paths():
             "testing",
             "test_disp"
         ),
+        "semantic_maps": os.path.join(
+            script_dir,
+            "outputs",
+            "semantic_maps"
+        ),
         "model_weights": os.path.join(script_dir, "model_weights.pth")
     }
 
@@ -91,6 +96,16 @@ def generate_test_disparities(paths):
     )
 
 
+def generate_semantic_maps(image_dir, output_dir, limit):
+    from segmentation.extract_segmentation import generate_segmentation
+
+    generate_segmentation(
+        image_dir=image_dir,
+        output_dir=output_dir,
+        limit=limit,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="KITTI depth/disparity estimation project entry point."
@@ -98,7 +113,13 @@ def main():
 
     parser.add_argument(
         "command",
-        choices=["train", "generate-test-disp", "evaluate", "all"],
+        choices=[
+            "train",
+            "generate-test-disp",
+            "evaluate",
+            "generate-segmentation",
+            "all"
+        ],
         help="Pipeline step to run."
     )
 
@@ -116,8 +137,30 @@ def main():
         help="Training batch size."
     )
 
+    parser.add_argument(
+        "--image-dir",
+        default=None,
+        help="Directory containing input images for semantic segmentation."
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Directory where semantic maps will be saved."
+    )
+
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Optional limit for smoke testing."
+    )
+
     args = parser.parse_args()
     paths = get_paths()
+
+    image_dir = args.image_dir or paths["test_left_images"]
+    output_dir = args.output_dir or paths["semantic_maps"]
 
     if args.command == "train":
         train_model(paths, args.epochs, args.batch_size)
@@ -127,6 +170,13 @@ def main():
 
     elif args.command == "evaluate":
         run_evaluation()
+
+    elif args.command == "generate-segmentation":
+        generate_semantic_maps(
+            image_dir=image_dir,
+            output_dir=output_dir,
+            limit=args.limit
+        )
 
     elif args.command == "all":
         train_model(paths, args.epochs, args.batch_size)
