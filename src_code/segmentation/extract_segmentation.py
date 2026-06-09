@@ -28,6 +28,8 @@ def generate_segmentation(
     limit=None,
     model_name="nvidia/segformer-b0-finetuned-ade-512-512",
     device=None,
+    frame_suffix="_10",
+    skip_existing=True,
 ):
     image_dir = Path(image_dir)
     output_dir = Path(output_dir)
@@ -50,6 +52,12 @@ def generate_segmentation(
         list(image_dir.glob("*.jpeg"))
     )
 
+    if frame_suffix is not None:
+        image_paths = [
+            path for path in image_paths
+            if path.stem.endswith(frame_suffix)
+        ]
+
     if limit is not None:
         image_paths = image_paths[:limit]
 
@@ -70,10 +78,22 @@ def generate_segmentation(
     for idx, image_path in enumerate(image_paths, start=1):
         stem = image_path.stem
 
-        class_map = segmenter.predict(image_path)
-
         map_path = semantic_map_dir / f"{stem}.npy"
         overlay_path = overlay_dir / f"{stem}.png"
+
+        if skip_existing and map_path.exists() and overlay_path.exists():
+            print(f"[{idx}/{len(image_paths)}] skipped existing {map_path.name}")
+            saved_paths.append(
+                {
+                    "image": str(image_path),
+                    "semantic_map": str(map_path),
+                    "overlay": str(overlay_path),
+                    "skipped": True,
+                }
+            )
+            continue
+
+        class_map = segmenter.predict(image_path)
 
         np.save(map_path, class_map)
 
@@ -85,8 +105,11 @@ def generate_segmentation(
                 "image": str(image_path),
                 "semantic_map": str(map_path),
                 "overlay": str(overlay_path),
+                "skipped": False,
             }
         )
+
+        print(f"[{idx}/{len(image_paths)}] saved {map_path.name}")
 
         print(f"[{idx}/{len(image_paths)}] saved {map_path.name}")
 

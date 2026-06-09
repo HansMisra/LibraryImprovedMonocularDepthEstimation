@@ -51,6 +51,16 @@ def get_paths():
             "outputs",
             "semantic_maps"
         ),
+        "semantic_overlays": os.path.join(
+            script_dir,
+            "outputs",
+            "semantic_overlays"
+        ),
+        "corpus_manifest": os.path.join(
+            script_dir,
+            "outputs",
+            "corpus_manifest.jsonl"
+        ),
         "model_weights": os.path.join(script_dir, "model_weights.pth")
     }
 
@@ -96,7 +106,15 @@ def generate_test_disparities(paths):
     )
 
 
-def generate_semantic_maps(image_dir, output_dir, limit, model_name, device):
+def generate_semantic_maps(
+    image_dir,
+    output_dir,
+    limit,
+    model_name,
+    device,
+    frame_suffix,
+    skip_existing=True,
+):
     from segmentation.extract_segmentation import generate_segmentation
 
     generate_segmentation(
@@ -105,8 +123,27 @@ def generate_semantic_maps(image_dir, output_dir, limit, model_name, device):
         limit=limit,
         model_name=model_name,
         device=device,
+        frame_suffix=frame_suffix,
+        skip_existing=skip_existing,
     )
 
+def build_corpus(paths, limit, frame_suffix):
+    from corpus.build_corpus import build_corpus_manifest
+
+    if frame_suffix == "none":
+        frame_suffix = None
+
+    build_corpus_manifest(
+        left_image_dir=paths["test_left_images"],
+        right_image_dir=paths["test_right_images"],
+        disparity_dir=paths["test_disparities"],
+        semantic_map_dir=paths["semantic_maps"],
+        semantic_overlay_dir=paths["semantic_overlays"],
+        output_path=paths["corpus_manifest"],
+        limit=limit,
+        require_all=True,
+        frame_suffix=frame_suffix,
+    )
 
 def main():
     parser = argparse.ArgumentParser(
@@ -120,6 +157,7 @@ def main():
             "generate-test-disp",
             "evaluate",
             "generate-segmentation",
+            "build-corpus",
             "all"
         ],
         help="Pipeline step to run."
@@ -143,6 +181,12 @@ def main():
         "--image-dir",
         default=None,
         help="Directory containing input images for semantic segmentation."
+    )
+
+    parser.add_argument(
+        "--frame-suffix",
+        default="_10",
+        help="Only use images whose filename stem ends with this suffix. Use 'none' to disable."
     )
 
     parser.add_argument(
@@ -170,6 +214,12 @@ def main():
         help="Device for segmentation: cuda, cpu, or auto if omitted."
     )
 
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Regenerate semantic outputs even if files already exist."
+    )
+
     args = parser.parse_args()
     paths = get_paths()
 
@@ -192,7 +242,17 @@ def main():
             limit=args.limit,
             model_name=args.seg_model,
             device=args.device,
+            frame_suffix=None if args.frame_suffix == "none" else args.frame_suffix,
+            skip_existing=not args.overwrite,
         )
+
+    elif args.command == "build-corpus":
+        build_corpus(
+            paths=paths,
+            limit=args.limit,
+            frame_suffix=args.frame_suffix,
+        )
+
     elif args.command == "all":
         train_model(paths, args.epochs, args.batch_size)
         generate_test_disparities(paths)
