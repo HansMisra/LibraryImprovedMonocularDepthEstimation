@@ -61,6 +61,22 @@ def generate_segmentation(
     if limit is not None:
         image_paths = image_paths[:limit]
 
+        pending_image_paths = []
+
+        for image_path in image_paths:
+            stem = image_path.stem
+            map_path = semantic_map_dir / f"{stem}.npy"
+            overlay_path = overlay_dir / f"{stem}.png"
+
+            if skip_existing and map_path.exists() and overlay_path.exists():
+                continue
+
+            pending_image_paths.append(image_path)
+
+        if skip_existing and len(pending_image_paths) == 0:
+            print("All requested semantic outputs already exist. Nothing to generate.")
+            return []
+
     if len(image_paths) == 0:
         print(f"No images found in: {image_dir}")
         return []
