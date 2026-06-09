@@ -1,17 +1,30 @@
 ignorefolder/
 
+# Dataset files
 src_code/kitti_data/
-src_code/__pycache__/
+kitti_data/
 
+# Generated outputs
+src_code/outputs/
+outputs/
+
+# Python cache
 __pycache__/
+src_code/__pycache__/
 *.pyc
 *.pyo
 .ipynb_checkpoints/
 
+# Model/checkpoint files
 *.pth
 *.pt
 *.h5
 *.ckpt
 
+# Numpy generated arrays
+*.npy
+*.npz
+
+# OS junk
 .DS_Store
 Thumbs.db

@@ -96,13 +96,15 @@ def generate_test_disparities(paths):
     )
 
 
-def generate_semantic_maps(image_dir, output_dir, limit):
+def generate_semantic_maps(image_dir, output_dir, limit, model_name, device):
     from segmentation.extract_segmentation import generate_segmentation
 
     generate_segmentation(
         image_dir=image_dir,
         output_dir=output_dir,
         limit=limit,
+        model_name=model_name,
+        device=device,
     )
 
 
@@ -156,6 +158,18 @@ def main():
         help="Optional limit for smoke testing."
     )
 
+    parser.add_argument(
+        "--seg-model",
+        default="nvidia/segformer-b0-finetuned-ade-512-512",
+        help="Semantic segmentation model name."
+    )
+
+    parser.add_argument(
+        "--device",
+        default=None,
+        help="Device for segmentation: cuda, cpu, or auto if omitted."
+    )
+
     args = parser.parse_args()
     paths = get_paths()
 
@@ -175,13 +189,15 @@ def main():
         generate_semantic_maps(
             image_dir=image_dir,
             output_dir=output_dir,
-            limit=args.limit
+            limit=args.limit,
+            model_name=args.seg_model,
+            device=args.device,
         )
-
     elif args.command == "all":
         train_model(paths, args.epochs, args.batch_size)
         generate_test_disparities(paths)
         run_evaluation()
+
 
 
 if __name__ == "__main__":
