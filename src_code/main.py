@@ -61,6 +61,11 @@ def get_paths():
             "outputs",
             "corpus_manifest.jsonl"
         ),
+        "corpus_visualizations": os.path.join(
+            script_dir,
+            "outputs",
+            "corpus_visualizations"
+        ),
         "model_weights": os.path.join(script_dir, "model_weights.pth")
     }
 
@@ -145,6 +150,24 @@ def build_corpus(paths, limit, frame_suffix):
         frame_suffix=frame_suffix,
     )
 
+def validate_corpus(paths, limit):
+    from corpus.validate_corpus import validate_corpus_manifest
+
+    validate_corpus_manifest(
+        manifest_path=paths["corpus_manifest"],
+        max_records=limit,
+    )
+
+
+def visualize_corpus(paths, limit):
+    from corpus.visualize_corpus import save_corpus_visualizations
+
+    save_corpus_visualizations(
+        manifest_path=paths["corpus_manifest"],
+        output_dir=paths["corpus_visualizations"],
+        limit=limit,
+    )
+
 def main():
     parser = argparse.ArgumentParser(
         description="KITTI depth/disparity estimation project entry point."
@@ -158,6 +181,8 @@ def main():
             "evaluate",
             "generate-segmentation",
             "build-corpus",
+            "validate-corpus",
+            "visualize-corpus",
             "all"
         ],
         help="Pipeline step to run."
@@ -246,6 +271,12 @@ def main():
             skip_existing=not args.overwrite,
         )
 
+    elif args.command == "validate-corpus":
+        validate_corpus(paths, args.limit)
+
+    elif args.command == "visualize-corpus":
+        visualize_corpus(paths, args.limit)
+        
     elif args.command == "build-corpus":
         build_corpus(
             paths=paths,
