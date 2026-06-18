@@ -42,7 +42,7 @@ def generate_segmentation(
             f"Image directory not found: {image_dir}\n"
             "Expected KITTI left images. Pass a valid --image-dir."
         )
-
+ 
     semantic_map_dir.mkdir(parents=True, exist_ok=True)
     overlay_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,7 +93,7 @@ def generate_segmentation(
 
     for idx, image_path in enumerate(image_paths, start=1):
         stem = image_path.stem
-
+ 
         map_path = semantic_map_dir / f"{stem}.npy"
         overlay_path = overlay_dir / f"{stem}.png"
 
