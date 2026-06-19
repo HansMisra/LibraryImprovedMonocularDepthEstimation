@@ -1,6 +1,8 @@
 import argparse
 import os
 
+from utils.runtime_utils import configure_thread_env, timed_command
+
 
 def get_paths():
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -66,6 +68,24 @@ def get_paths():
             "corpus_visualizations",
         ),
 
+        "semantic_baseline_model": os.path.join(
+            script_dir,
+            "outputs",
+            "models",
+            "semantic_median_baseline.json",
+        ),
+        "semantic_baseline_eval": os.path.join(
+            script_dir,
+            "outputs",
+            "semantic_baseline_eval",
+        ),
+
+        "runtime_log": os.path.join(
+            script_dir,
+            "outputs",
+            "runtime_log.csv",
+        ),
+
         "model_weights": os.path.join(script_dir, "model_weights.pth"),
     }
 
@@ -85,7 +105,11 @@ def check_dir(path, label):
     return True
 
 
-def train_model(paths, epochs, batch_size):
+def train_model(paths, epochs, batch_size, num_threads):
+    from utils.runtime_utils import apply_library_thread_limits
+
+    apply_library_thread_limits(num_threads)
+
     from train import train
 
     if not check_dir(paths["train_images"], "Training image directory"):
@@ -103,7 +127,11 @@ def train_model(paths, epochs, batch_size):
     )
 
 
-def generate_test_disparities(paths):
+def generate_test_disparities(paths, num_threads):
+    from utils.runtime_utils import apply_library_thread_limits
+
+    apply_library_thread_limits(num_threads)
+
     from create_test_disp import save_disparity_maps
 
     if not check_dir(paths["test_left_images"], "Test left image directory"):
@@ -121,7 +149,11 @@ def generate_test_disparities(paths):
     )
 
 
-def run_depth_evaluation():
+def run_depth_evaluation(num_threads):
+    from utils.runtime_utils import apply_library_thread_limits
+
+    apply_library_thread_limits(num_threads)
+
     from run_evaluation import run_evaluation
 
     run_evaluation()
@@ -134,8 +166,13 @@ def generate_semantic_maps(
     model_name,
     device,
     frame_suffix,
-    skip_existing=True,
+    skip_existing,
+    num_threads,
 ):
+    from utils.runtime_utils import apply_library_thread_limits
+
+    apply_library_thread_limits(num_threads)
+
     from segmentation.extract_segmentation import generate_segmentation
 
     generate_segmentation(
@@ -184,6 +221,41 @@ def visualize_corpus(paths, limit):
     )
 
 
+def train_semantic_baseline(paths, args):
+    from utils.runtime_utils import apply_library_thread_limits
+
+    apply_library_thread_limits(args.num_threads)
+
+    from baselines.semantic_median import train_semantic_median_baseline
+
+    train_semantic_median_baseline(
+        manifest_path=paths["corpus_manifest"],
+        output_path=paths["semantic_baseline_model"],
+        max_records=args.limit,
+        max_pixels_per_image=args.max_pixels_per_image,
+        seed=args.seed,
+    )
+
+
+def evaluate_semantic_baseline(paths, args):
+    from utils.runtime_utils import apply_library_thread_limits
+
+    apply_library_thread_limits(args.num_threads)
+
+    from baselines.semantic_median import evaluate_semantic_median_baseline
+
+    evaluate_semantic_median_baseline(
+        manifest_path=paths["corpus_manifest"],
+        model_path=paths["semantic_baseline_model"],
+        output_dir=paths["semantic_baseline_eval"],
+        max_records=args.limit,
+        risk_percentile=args.risk_percentile,
+        threshold_percentile=args.threshold_percentile,
+        risk_threshold=args.risk_threshold,
+        save_predictions=args.save_predictions,
+    )
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="KITTI depth/disparity estimation project entry point."
@@ -199,6 +271,8 @@ def build_parser():
             "build-corpus",
             "validate-corpus",
             "visualize-corpus",
+            "train-semantic-baseline",
+            "evaluate-semantic-baseline",
             "all",
         ],
         help="Pipeline step to run.",
@@ -261,6 +335,60 @@ def build_parser():
         help="Regenerate semantic outputs even if files already exist.",
     )
 
+    parser.add_argument(
+        "--num-threads",
+        type=int,
+        default=None,
+        help="Thread limit for CPU libraries where supported.",
+    )
+
+    parser.add_argument(
+        "--runtime-log",
+        default=None,
+        help="Optional runtime CSV path. Defaults to src_code/outputs/runtime_log.csv.",
+    )
+
+    parser.add_argument(
+        "--max-pixels-per-image",
+        type=int,
+        default=50000,
+        help="Max sampled pixels per image for semantic baseline training.",
+    )
+
+    parser.add_argument(
+        "--risk-percentile",
+        type=float,
+        default=95.0,
+        help="Percentile of ROI disparity used as collision-risk score.",
+    )
+
+    parser.add_argument(
+        "--threshold-percentile",
+        type=float,
+        default=85.0,
+        help="Dataset percentile used to estimate risk threshold when none is supplied.",
+    )
+
+    parser.add_argument(
+        "--risk-threshold",
+        type=float,
+        default=None,
+        help="Manual pseudo-disparity threshold for collision-risk decisions.",
+    )
+
+    parser.add_argument(
+        "--save-predictions",
+        action="store_true",
+        help="Save semantic baseline prediction heatmaps during evaluation.",
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=7,
+        help="Random seed for sampled baseline training.",
+    )
+
     return parser
 
 
@@ -268,49 +396,90 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
+    configure_thread_env(args.num_threads)
+
     paths = get_paths()
 
     image_dir = args.image_dir or paths["test_left_images"]
     output_dir = args.output_dir or paths["semantic_maps"]
     frame_suffix = normalize_frame_suffix(args.frame_suffix)
+    runtime_log = args.runtime_log or paths["runtime_log"]
 
-    if args.command == "train":
-        train_model(paths, args.epochs, args.batch_size)
+    metadata = {
+        "limit": args.limit,
+        "epochs": args.epochs,
+        "batch_size": args.batch_size,
+        "frame_suffix": frame_suffix,
+        "device": args.device,
+        "num_threads": args.num_threads,
+    }
 
-    elif args.command == "generate-test-disp":
-        generate_test_disparities(paths)
+    with timed_command(
+        command=args.command,
+        log_path=runtime_log,
+        num_threads=args.num_threads,
+        metadata=metadata,
+    ):
+        if args.command == "train":
+            train_model(
+                paths=paths,
+                epochs=args.epochs,
+                batch_size=args.batch_size,
+                num_threads=args.num_threads,
+            )
 
-    elif args.command == "evaluate":
-        run_depth_evaluation()
+        elif args.command == "generate-test-disp":
+            generate_test_disparities(
+                paths=paths,
+                num_threads=args.num_threads,
+            )
 
-    elif args.command == "generate-segmentation":
-        generate_semantic_maps(
-            image_dir=image_dir,
-            output_dir=output_dir,
-            limit=args.limit,
-            model_name=args.seg_model,
-            device=args.device,
-            frame_suffix=frame_suffix,
-            skip_existing=not args.overwrite,
-        )
+        elif args.command == "evaluate":
+            run_depth_evaluation(num_threads=args.num_threads)
 
-    elif args.command == "build-corpus":
-        build_corpus(
-            paths=paths,
-            limit=args.limit,
-            frame_suffix=frame_suffix,
-        )
+        elif args.command == "generate-segmentation":
+            generate_semantic_maps(
+                image_dir=image_dir,
+                output_dir=output_dir,
+                limit=args.limit,
+                model_name=args.seg_model,
+                device=args.device,
+                frame_suffix=frame_suffix,
+                skip_existing=not args.overwrite,
+                num_threads=args.num_threads,
+            )
 
-    elif args.command == "validate-corpus":
-        validate_corpus(paths, args.limit)
+        elif args.command == "build-corpus":
+            build_corpus(
+                paths=paths,
+                limit=args.limit,
+                frame_suffix=frame_suffix,
+            )
 
-    elif args.command == "visualize-corpus":
-        visualize_corpus(paths, args.limit)
+        elif args.command == "validate-corpus":
+            validate_corpus(paths, args.limit)
 
-    elif args.command == "all":
-        train_model(paths, args.epochs, args.batch_size)
-        generate_test_disparities(paths)
-        run_depth_evaluation()
+        elif args.command == "visualize-corpus":
+            visualize_corpus(paths, args.limit)
+
+        elif args.command == "train-semantic-baseline":
+            train_semantic_baseline(paths, args)
+
+        elif args.command == "evaluate-semantic-baseline":
+            evaluate_semantic_baseline(paths, args)
+
+        elif args.command == "all":
+            train_model(
+                paths=paths,
+                epochs=args.epochs,
+                batch_size=args.batch_size,
+                num_threads=args.num_threads,
+            )
+            generate_test_disparities(
+                paths=paths,
+                num_threads=args.num_threads,
+            )
+            run_depth_evaluation(num_threads=args.num_threads)
 
 
 if __name__ == "__main__":
