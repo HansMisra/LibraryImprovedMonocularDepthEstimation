@@ -1,0 +1,782 @@
+{
+  "car": {
+    "count": 659,
+    "median_disparity": 15.626953125,
+    "features": {
+      "area_fraction": {
+        "log_feature_log_disparity_corr": 0.8678567109934112,
+        "edges": [
+          0.0001460010735373054,
+          0.001203220611916264,
+          0.002688137412775094,
+          0.006201180891035966,
+          0.01400794417606012,
+          0.13262909286097693
+        ],
+        "bins": [
+          {
+            "min_feature": 0.0001460010735373054,
+            "max_feature": 0.001203220611916264,
+            "count": 132,
+            "median_disparity": 8.03515625,
+            "q10_disparity": 5.609375,
+            "q25_disparity": 6.46533203125,
+            "q75_disparity": 10.92333984375,
+            "q90_disparity": 15.0255859375
+          },
+          {
+            "min_feature": 0.001203220611916264,
+            "max_feature": 0.002688137412775094,
+            "count": 131,
+            "median_disparity": 10.42578125,
+            "q10_disparity": 8.08984375,
+            "q25_disparity": 8.83203125,
+            "q75_disparity": 12.5146484375,
+            "q90_disparity": 17.77734375
+          },
+          {
+            "min_feature": 0.002688137412775094,
+            "max_feature": 0.006201180891035966,
+            "count": 132,
+            "median_disparity": 14.076171875,
+            "q10_disparity": 11.101171875,
+            "q25_disparity": 12.2265625,
+            "q75_disparity": 16.77978515625,
+            "q90_disparity": 21.495703125000002
+          },
+          {
+            "min_feature": 0.006201180891035966,
+            "max_feature": 0.01400794417606012,
+            "count": 132,
+            "median_disparity": 22.021484375,
+            "q10_disparity": 16.31328125,
+            "q25_disparity": 19.380859375,
+            "q75_disparity": 23.568359375,
+            "q90_disparity": 25.763671875
+          },
+          {
+            "min_feature": 0.01400794417606012,
+            "max_feature": 0.13262909286097693,
+            "count": 132,
+            "median_disparity": 36.728515625,
+            "q10_disparity": 24.4404296875,
+            "q25_disparity": 28.384765625,
+            "q75_disparity": 49.328125,
+            "q90_disparity": 70.17695312500001
+          }
+        ]
+      },
+      "bbox_width_fraction": {
+        "log_feature_log_disparity_corr": 0.8326913854972638,
+        "edges": [
+          0.007438942238136574,
+          0.02549838497634863,
+          0.04195084379874949,
+          0.0666000877601513,
+          0.10642981782627566,
+          0.34625139866090243
+        ],
+        "bins": [
+          {
+            "min_feature": 0.007438942238136574,
+            "max_feature": 0.02549838497634863,
+            "count": 132,
+            "median_disparity": 8.134765625,
+            "q10_disparity": 5.609375,
+            "q25_disparity": 6.6962890625,
+            "q75_disparity": 9.509765625,
+            "q90_disparity": 14.806835937500004
+          },
+          {
+            "min_feature": 0.02549838497634863,
+            "max_feature": 0.04195084379874949,
+            "count": 132,
+            "median_disparity": 11.419921875,
+            "q10_disparity": 7.9328125,
+            "q25_disparity": 9.4462890625,
+            "q75_disparity": 13.31396484375,
+            "q90_disparity": 16.326171875
+          },
+          {
+            "min_feature": 0.04195084379874949,
+            "max_feature": 0.0666000877601513,
+            "count": 131,
+            "median_disparity": 15.4765625,
+            "q10_disparity": 9.39453125,
+            "q25_disparity": 11.984375,
+            "q75_disparity": 19.576171875,
+            "q90_disparity": 23.298828125
+          },
+          {
+            "min_feature": 0.0666000877601513,
+            "max_feature": 0.10642981782627566,
+            "count": 132,
+            "median_disparity": 22.263671875,
+            "q10_disparity": 14.1248046875,
+            "q25_disparity": 17.1123046875,
+            "q75_disparity": 24.69140625,
+            "q90_disparity": 28.073437500000004
+          },
+          {
+            "min_feature": 0.10642981782627566,
+            "max_feature": 0.34625139866090243,
+            "count": 132,
+            "median_disparity": 36.0654296875,
+            "q10_disparity": 21.785546875,
+            "q25_disparity": 26.8359375,
+            "q75_disparity": 49.328125,
+            "q90_disparity": 70.340625
+          }
+        ]
+      },
+      "bbox_height_fraction": {
+        "log_feature_log_disparity_corr": 0.8981329898872583,
+        "edges": [
+          0.02269921875,
+          0.06530999348958333,
+          0.09276083170572917,
+          0.13543477642519255,
+          0.19696793619791667,
+          0.612794189453125
+        ],
+        "bins": [
+          {
+            "min_feature": 0.02269921875,
+            "max_feature": 0.06530999348958333,
+            "count": 132,
+            "median_disparity": 7.71875,
+            "q10_disparity": 5.609375,
+            "q25_disparity": 6.421875,
+            "q75_disparity": 8.85791015625,
+            "q90_disparity": 14.983593750000004
+          },
+          {
+            "min_feature": 0.06530999348958333,
+            "max_feature": 0.09276083170572917,
+            "count": 132,
+            "median_disparity": 10.7890625,
+            "q10_disparity": 8.6578125,
+            "q25_disparity": 9.4462890625,
+            "q75_disparity": 11.958984375,
+            "q90_disparity": 13.2125
+          },
+          {
+            "min_feature": 0.09276083170572917,
+            "max_feature": 0.13543477642519255,
+            "count": 131,
+            "median_disparity": 14.7109375,
+            "q10_disparity": 12.1640625,
+            "q25_disparity": 13.166015625,
+            "q75_disparity": 16.591796875,
+            "q90_disparity": 18.08203125
+          },
+          {
+            "min_feature": 0.13543477642519255,
+            "max_feature": 0.19696793619791667,
+            "count": 132,
+            "median_disparity": 22.322265625,
+            "q10_disparity": 17.719921875,
+            "q25_disparity": 20.65234375,
+            "q75_disparity": 24.01513671875,
+            "q90_disparity": 25.2296875
+          },
+          {
+            "min_feature": 0.19696793619791667,
+            "max_feature": 0.612794189453125,
+            "count": 132,
+            "median_disparity": 37.37890625,
+            "q10_disparity": 26.128515625,
+            "q25_disparity": 28.751953125,
+            "q75_disparity": 49.4658203125,
+            "q90_disparity": 70.17695312500001
+          }
+        ]
+      }
+    }
+  },
+  "person": {
+    "count": 79,
+    "median_disparity": 13.953125,
+    "features": {
+      "area_fraction": {
+        "log_feature_log_disparity_corr": 0.7007033236210394,
+        "edges": [
+          0.00013311862587224907,
+          0.0003108964036500269,
+          0.0004624798711755234,
+          0.0007291465378421901,
+          0.001253462157809984,
+          0.009809680958592866
+        ],
+        "bins": [
+          {
+            "min_feature": 0.00013311862587224907,
+            "max_feature": 0.0003108964036500269,
+            "count": 16,
+            "median_disparity": 7.9951171875,
+            "q10_disparity": 6.734375,
+            "q25_disparity": 7.01171875,
+            "q75_disparity": 11.0205078125,
+            "q90_disparity": 18.1044921875
+          },
+          {
+            "min_feature": 0.0003108964036500269,
+            "max_feature": 0.0004624798711755234,
+            "count": 16,
+            "median_disparity": 9.1181640625,
+            "q10_disparity": 7.7998046875,
+            "q25_disparity": 8.400390625,
+            "q75_disparity": 11.2626953125,
+            "q90_disparity": 16.140625
+          },
+          {
+            "min_feature": 0.0004624798711755234,
+            "max_feature": 0.0007291465378421901,
+            "count": 15,
+            "median_disparity": 12.3671875,
+            "q10_disparity": 9.31796875,
+            "q25_disparity": 10.9619140625,
+            "q75_disparity": 18.087890625,
+            "q90_disparity": 28.7890625
+          },
+          {
+            "min_feature": 0.0007291465378421901,
+            "max_feature": 0.001253462157809984,
+            "count": 16,
+            "median_disparity": 15.103515625,
+            "q10_disparity": 10.98046875,
+            "q25_disparity": 13.5673828125,
+            "q75_disparity": 25.083984375,
+            "q90_disparity": 34.296875
+          },
+          {
+            "min_feature": 0.001253462157809984,
+            "max_feature": 0.009809680958592866,
+            "count": 16,
+            "median_disparity": 23.390625,
+            "q10_disparity": 13.994140625,
+            "q25_disparity": 18.0791015625,
+            "q75_disparity": 31.19189453125,
+            "q90_disparity": 56.3623046875
+          }
+        ]
+      },
+      "bbox_width_fraction": {
+        "log_feature_log_disparity_corr": 0.8290696586839328,
+        "edges": [
+          0.005277870165936996,
+          0.007498812063451494,
+          0.009807768740227292,
+          0.012796801875754832,
+          0.01771936094127416,
+          0.07832648372804213
+        ],
+        "bins": [
+          {
+            "min_feature": 0.005277870165936996,
+            "max_feature": 0.007498812063451494,
+            "count": 16,
+            "median_disparity": 8.4296875,
+            "q10_disparity": 6.779296875,
+            "q25_disparity": 7.6025390625,
+            "q75_disparity": 10.18701171875,
+            "q90_disparity": 15.58984375
+          },
+          {
+            "min_feature": 0.007498812063451494,
+            "max_feature": 0.009807768740227292,
+            "count": 16,
+            "median_disparity": 9.26953125,
+            "q10_disparity": 7.2216796875,
+            "q25_disparity": 7.91796875,
+            "q75_disparity": 10.21923828125,
+            "q90_disparity": 14.56640625
+          },
+          {
+            "min_feature": 0.009807768740227292,
+            "max_feature": 0.012796801875754832,
+            "count": 15,
+            "median_disparity": 12.23046875,
+            "q10_disparity": 9.857421875,
+            "q25_disparity": 10.98046875,
+            "q75_disparity": 14.6533203125,
+            "q90_disparity": 17.823437499999997
+          },
+          {
+            "min_feature": 0.012796801875754832,
+            "max_feature": 0.01771936094127416,
+            "count": 16,
+            "median_disparity": 17.029296875,
+            "q10_disparity": 13.994140625,
+            "q25_disparity": 14.6201171875,
+            "q75_disparity": 21.22265625,
+            "q90_disparity": 24.7490234375
+          },
+          {
+            "min_feature": 0.01771936094127416,
+            "max_feature": 0.07832648372804213,
+            "count": 16,
+            "median_disparity": 29.267578125,
+            "q10_disparity": 16.6640625,
+            "q25_disparity": 24.69677734375,
+            "q75_disparity": 38.58740234375,
+            "q90_disparity": 57.814453125
+          }
+        ]
+      },
+      "bbox_height_fraction": {
+        "log_feature_log_disparity_corr": 0.3902359050538628,
+        "edges": [
+          0.0268321533203125,
+          0.059863427734375,
+          0.07008487117991727,
+          0.08599973144531252,
+          0.12164127604166668,
+          0.25635502115885417
+        ],
+        "bins": [
+          {
+            "min_feature": 0.0268321533203125,
+            "max_feature": 0.059863427734375,
+            "count": 16,
+            "median_disparity": 10.271484375,
+            "q10_disparity": 6.734375,
+            "q25_disparity": 7.61279296875,
+            "q75_disparity": 23.93017578125,
+            "q90_disparity": 34.70703125
+          },
+          {
+            "min_feature": 0.059863427734375,
+            "max_feature": 0.07008487117991727,
+            "count": 16,
+            "median_disparity": 10.5498046875,
+            "q10_disparity": 6.845703125,
+            "q25_disparity": 7.77099609375,
+            "q75_disparity": 20.85888671875,
+            "q90_disparity": 27.6572265625
+          },
+          {
+            "min_feature": 0.07008487117991727,
+            "max_feature": 0.08599973144531252,
+            "count": 15,
+            "median_disparity": 9.740234375,
+            "q10_disparity": 8.40390625,
+            "q25_disparity": 8.634765625,
+            "q75_disparity": 12.2607421875,
+            "q90_disparity": 16.248437499999998
+          },
+          {
+            "min_feature": 0.08599973144531252,
+            "max_feature": 0.12164127604166668,
+            "count": 16,
+            "median_disparity": 12.47265625,
+            "q10_disparity": 10.98046875,
+            "q25_disparity": 11.6015625,
+            "q75_disparity": 14.4619140625,
+            "q90_disparity": 15.0576171875
+          },
+          {
+            "min_feature": 0.12164127604166668,
+            "max_feature": 0.25635502115885417,
+            "count": 16,
+            "median_disparity": 21.5146484375,
+            "q10_disparity": 14.69921875,
+            "q25_disparity": 17.1767578125,
+            "q75_disparity": 31.19189453125,
+            "q90_disparity": 56.3623046875
+          }
+        ]
+      }
+    }
+  },
+  "traffic light": {
+    "count": 49,
+    "median_disparity": 13.12109375,
+    "features": {
+      "area_fraction": {
+        "log_feature_log_disparity_corr": 0.8693547456089614,
+        "edges": [
+          0.00010735373054213633,
+          0.00019409554482018252,
+          0.00025206655931293614,
+          0.00039935587761674745,
+          0.0006254079483633104,
+          0.002342458400429415
+        ],
+        "bins": [
+          {
+            "min_feature": 0.00010735373054213633,
+            "max_feature": 0.00019409554482018252,
+            "count": 10,
+            "median_disparity": 6.162109375,
+            "q10_disparity": 5.41015625,
+            "q25_disparity": 5.41015625,
+            "q75_disparity": 7.6669921875,
+            "q90_disparity": 9.1244140625
+          },
+          {
+            "min_feature": 0.00019409554482018252,
+            "max_feature": 0.00025206655931293614,
+            "count": 10,
+            "median_disparity": 11.05859375,
+            "q10_disparity": 10.809765625,
+            "q25_disparity": 11.048828125,
+            "q75_disparity": 11.0703125,
+            "q90_disparity": 11.359570312499999
+          },
+          {
+            "min_feature": 0.00025206655931293614,
+            "max_feature": 0.00039935587761674745,
+            "count": 9,
+            "median_disparity": 13.53125,
+            "q10_disparity": 8.9890625,
+            "q25_disparity": 9.56640625,
+            "q75_disparity": 15.28125,
+            "q90_disparity": 15.478515625
+          },
+          {
+            "min_feature": 0.00039935587761674745,
+            "max_feature": 0.0006254079483633104,
+            "count": 10,
+            "median_disparity": 15.7197265625,
+            "q10_disparity": 12.8875,
+            "q25_disparity": 13.94482421875,
+            "q75_disparity": 16.4736328125,
+            "q90_disparity": 17.8455078125
+          },
+          {
+            "min_feature": 0.0006254079483633104,
+            "max_feature": 0.002342458400429415,
+            "count": 10,
+            "median_disparity": 18.40234375,
+            "q10_disparity": 14.54765625,
+            "q25_disparity": 16.173828125,
+            "q75_disparity": 26.4248046875,
+            "q90_disparity": 27.120703125
+          }
+        ]
+      },
+      "bbox_width_fraction": {
+        "log_feature_log_disparity_corr": 0.8175273377094299,
+        "edges": [
+          0.004605697164980878,
+          0.005997033357236312,
+          0.0069769473851398955,
+          0.007921311628799317,
+          0.010543277758907007,
+          0.020721730402702296
+        ],
+        "bins": [
+          {
+            "min_feature": 0.004605697164980878,
+            "max_feature": 0.005997033357236312,
+            "count": 10,
+            "median_disparity": 7.310546875,
+            "q10_disparity": 5.41015625,
+            "q25_disparity": 5.673828125,
+            "q75_disparity": 8.65234375,
+            "q90_disparity": 9.24921875
+          },
+          {
+            "min_feature": 0.005997033357236312,
+            "max_feature": 0.0069769473851398955,
+            "count": 10,
+            "median_disparity": 11.056640625,
+            "q10_disparity": 5.814453125,
+            "q25_disparity": 9.20458984375,
+            "q75_disparity": 11.0703125,
+            "q90_disparity": 13.565625
+          },
+          {
+            "min_feature": 0.0069769473851398955,
+            "max_feature": 0.007921311628799317,
+            "count": 9,
+            "median_disparity": 12.775390625,
+            "q10_disparity": 11.04296875,
+            "q25_disparity": 11.05859375,
+            "q75_disparity": 15.28125,
+            "q90_disparity": 15.332421875
+          },
+          {
+            "min_feature": 0.007921311628799317,
+            "max_feature": 0.010543277758907007,
+            "count": 10,
+            "median_disparity": 15.59375,
+            "q10_disparity": 12.8875,
+            "q25_disparity": 13.84814453125,
+            "q75_disparity": 16.40478515625,
+            "q90_disparity": 17.1177734375
+          },
+          {
+            "min_feature": 0.010543277758907007,
+            "max_feature": 0.020721730402702296,
+            "count": 10,
+            "median_disparity": 18.6064453125,
+            "q10_disparity": 15.9984375,
+            "q25_disparity": 16.40771484375,
+            "q75_disparity": 26.4248046875,
+            "q90_disparity": 27.120703125
+          }
+        ]
+      },
+      "bbox_height_fraction": {
+        "log_feature_log_disparity_corr": 0.8370289081754954,
+        "edges": [
+          0.019001302083333334,
+          0.034044710286458335,
+          0.04046427408854167,
+          0.052299495442708344,
+          0.0727841122891041,
+          0.15254868570963542
+        ],
+        "bins": [
+          {
+            "min_feature": 0.019001302083333334,
+            "max_feature": 0.034044710286458335,
+            "count": 10,
+            "median_disparity": 6.162109375,
+            "q10_disparity": 5.41015625,
+            "q25_disparity": 5.41015625,
+            "q75_disparity": 8.46240234375,
+            "q90_disparity": 9.6453125
+          },
+          {
+            "min_feature": 0.034044710286458335,
+            "max_feature": 0.04046427408854167,
+            "count": 10,
+            "median_disparity": 11.056640625,
+            "q10_disparity": 8.76875,
+            "q25_disparity": 11.0322265625,
+            "q75_disparity": 11.0703125,
+            "q90_disparity": 11.500195312499999
+          },
+          {
+            "min_feature": 0.04046427408854167,
+            "max_feature": 0.052299495442708344,
+            "count": 9,
+            "median_disparity": 13.53125,
+            "q10_disparity": 8.9890625,
+            "q25_disparity": 9.56640625,
+            "q75_disparity": 15.27734375,
+            "q90_disparity": 15.478515625
+          },
+          {
+            "min_feature": 0.052299495442708344,
+            "max_feature": 0.0727841122891041,
+            "count": 10,
+            "median_disparity": 16.181640625,
+            "q10_disparity": 13.47109375,
+            "q25_disparity": 14.7353515625,
+            "q75_disparity": 17.0869140625,
+            "q90_disparity": 20.216796875
+          },
+          {
+            "min_feature": 0.0727841122891041,
+            "max_feature": 0.15254868570963542,
+            "count": 10,
+            "median_disparity": 16.5654296875,
+            "q10_disparity": 13.588671875,
+            "q25_disparity": 15.0234375,
+            "q75_disparity": 26.4248046875,
+            "q90_disparity": 27.120703125
+          }
+        ]
+      }
+    }
+  },
+  "truck": {
+    "count": 28,
+    "median_disparity": 18.765625,
+    "features": {
+      "area_fraction": {
+        "log_feature_log_disparity_corr": 0.9191111408039718,
+        "edges": [
+          0.0026838432635534087,
+          0.006144532920638264,
+          0.010862185238962678,
+          0.020129462290600558,
+          0.03240880300590446,
+          0.16323564143854
+        ],
+        "bins": [
+          {
+            "min_feature": 0.0026838432635534087,
+            "max_feature": 0.006144532920638264,
+            "count": 6,
+            "median_disparity": 10.28125,
+            "q10_disparity": 8.724609375,
+            "q25_disparity": 9.640625,
+            "q75_disparity": 11.1240234375,
+            "q90_disparity": 12.126953125
+          },
+          {
+            "min_feature": 0.006144532920638264,
+            "max_feature": 0.010862185238962678,
+            "count": 5,
+            "median_disparity": 16.7734375,
+            "q10_disparity": 10.38671875,
+            "q25_disparity": 11.60546875,
+            "q75_disparity": 18.05859375,
+            "q90_disparity": 23.3953125
+          },
+          {
+            "min_feature": 0.010862185238962678,
+            "max_feature": 0.020129462290600558,
+            "count": 6,
+            "median_disparity": 18.46875,
+            "q10_disparity": 16.3828125,
+            "q25_disparity": 17.994140625,
+            "q75_disparity": 18.849609375,
+            "q90_disparity": 19.337890625
+          },
+          {
+            "min_feature": 0.020129462290600558,
+            "max_feature": 0.03240880300590446,
+            "count": 5,
+            "median_disparity": 24.78515625,
+            "q10_disparity": 23.38203125,
+            "q25_disparity": 23.955078125,
+            "q75_disparity": 27.19140625,
+            "q90_disparity": 27.446875
+          },
+          {
+            "min_feature": 0.03240880300590446,
+            "max_feature": 0.16323564143854,
+            "count": 6,
+            "median_disparity": 38.39453125,
+            "q10_disparity": 29.001953125,
+            "q25_disparity": 32.9091796875,
+            "q75_disparity": 45.0107421875,
+            "q90_disparity": 70.02734375
+          }
+        ]
+      },
+      "bbox_width_fraction": {
+        "log_feature_log_disparity_corr": 0.7889631066097889,
+        "edges": [
+          0.03404378353493609,
+          0.05992147302433677,
+          0.07722294756755738,
+          0.10377022317834139,
+          0.1403784577766684,
+          0.2679696689673284
+        ],
+        "bins": [
+          {
+            "min_feature": 0.03404378353493609,
+            "max_feature": 0.05992147302433677,
+            "count": 6,
+            "median_disparity": 11.8125,
+            "q10_disparity": 8.724609375,
+            "q25_disparity": 9.826171875,
+            "q75_disparity": 17.443359375,
+            "q90_disparity": 22.943359375
+          },
+          {
+            "min_feature": 0.05992147302433677,
+            "max_feature": 0.07722294756755738,
+            "count": 5,
+            "median_disparity": 16.7734375,
+            "q10_disparity": 10.45859375,
+            "q25_disparity": 11.28125,
+            "q75_disparity": 17.87890625,
+            "q90_disparity": 17.98671875
+          },
+          {
+            "min_feature": 0.07722294756755738,
+            "max_feature": 0.10377022317834139,
+            "count": 6,
+            "median_disparity": 16.61328125,
+            "q10_disparity": 10.58984375,
+            "q25_disparity": 12.42578125,
+            "q75_disparity": 21.8349609375,
+            "q90_disparity": 25.095703125
+          },
+          {
+            "min_feature": 0.10377022317834139,
+            "max_feature": 0.1403784577766684,
+            "count": 5,
+            "median_disparity": 24.78515625,
+            "q10_disparity": 19.05546875,
+            "q25_disparity": 19.7421875,
+            "q75_disparity": 27.6171875,
+            "q90_disparity": 38.3796875
+          },
+          {
+            "min_feature": 0.1403784577766684,
+            "max_feature": 0.2679696689673284,
+            "count": 6,
+            "median_disparity": 33.076171875,
+            "q10_disparity": 24.6083984375,
+            "q25_disparity": 27.1318359375,
+            "q75_disparity": 40.88671875,
+            "q90_disparity": 68.939453125
+          }
+        ]
+      },
+      "bbox_height_fraction": {
+        "log_feature_log_disparity_corr": 0.9549463065854592,
+        "edges": [
+          0.092313720703125,
+          0.12321584955715241,
+          0.189192236328125,
+          0.24148407389322918,
+          0.3400560709635417,
+          0.8693659159342448
+        ],
+        "bins": [
+          {
+            "min_feature": 0.092313720703125,
+            "max_feature": 0.12321584955715241,
+            "count": 6,
+            "median_disparity": 10.427734375,
+            "q10_disparity": 8.724609375,
+            "q25_disparity": 9.556640625,
+            "q75_disparity": 11.5244140625,
+            "q90_disparity": 12.2890625
+          },
+          {
+            "min_feature": 0.12321584955715241,
+            "max_feature": 0.189192236328125,
+            "count": 5,
+            "median_disparity": 14.88671875,
+            "q10_disparity": 10.20703125,
+            "q25_disparity": 10.65234375,
+            "q75_disparity": 18.05859375,
+            "q90_disparity": 18.22734375
+          },
+          {
+            "min_feature": 0.189192236328125,
+            "max_feature": 0.24148407389322918,
+            "count": 6,
+            "median_disparity": 18.765625,
+            "q10_disparity": 17.326171875,
+            "q25_disparity": 18.05859375,
+            "q75_disparity": 19.5400390625,
+            "q90_disparity": 21.8486328125
+          },
+          {
+            "min_feature": 0.24148407389322918,
+            "max_feature": 0.3400560709635417,
+            "count": 5,
+            "median_disparity": 27.19140625,
+            "q10_disparity": 25.93828125,
+            "q25_disparity": 26.953125,
+            "q75_disparity": 27.6171875,
+            "q90_disparity": 30.6921875
+          },
+          {
+            "min_feature": 0.3400560709635417,
+            "max_feature": 0.8693659159342448,
+            "count": 6,
+            "median_disparity": 38.39453125,
+            "q10_disparity": 23.892578125,
+            "q25_disparity": 26.94140625,
+            "q75_disparity": 45.0107421875,
+            "q90_disparity": 70.02734375
+          }
+        ]
+      }
+    }
+  }
+}
