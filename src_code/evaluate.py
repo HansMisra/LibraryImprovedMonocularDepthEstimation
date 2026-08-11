@@ -1,118 +1,120 @@
-# evaluate module
+import math
 
-import torch
-import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import mean_squared_error, accuracy_score, precision_score
+import numpy as np
+import torch
+import torch.nn.functional as F
 from tqdm import tqdm
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+def disparity_metrics(pred, target, valid_mask=None):
+    pred = np.asarray(pred, dtype=np.float64)
+    target = np.asarray(target, dtype=np.float64)
 
-def apply_transformation(predicted, transformation):
-    """
-    Apply a simple linear transformation to model predictions.
-
-    Args:
-        predicted: torch.Tensor of predicted disparity values.
-        transformation: np.array or list like [scale, bias].
-
-    Returns:
-        torch.Tensor with transformed predictions.
-    """
-    if transformation is None or len(transformation) == 0:
-        return predicted
-
-    transformation = torch.tensor(
-        transformation,
-        dtype=torch.float32,
-        device=predicted.device
+    valid = (
+        (target > 0)
+        & np.isfinite(target)
+        & np.isfinite(pred)
     )
 
-    scale, bias = transformation[0], transformation[1]
-    return scale * predicted + bias
+    if valid_mask is not None:
+        valid &= np.asarray(valid_mask).astype(bool)
+
+    if not np.any(valid):
+        return None
+
+    pred = pred[valid]
+    target = target[valid]
+    error = np.abs(pred - target)
+    relative_error = error / np.maximum(target, 1e-6)
+
+    return {
+        "valid_pixels": int(valid.sum()),
+        "epe": float(np.mean(error)),
+        "rmse": float(np.sqrt(np.mean(error ** 2))),
+        "bad_1": float(np.mean(error > 1.0)),
+        "bad_3": float(np.mean(error > 3.0)),
+        "d1": float(np.mean((error > 3.0) & (relative_error > 0.05))),
+    }
 
 
-def percentile_accuracy(y_true, y_pred, tolerance=0.25):
-    """
-    Calculates the fraction of predictions within a fixed absolute tolerance.
-
-    Args:
-        y_true: Ground-truth values.
-        y_pred: Predicted values.
-        tolerance: Maximum absolute error counted as correct.
-
-    Returns:
-        Float between 0 and 1.
-    """
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
-
-    if y_true.shape != y_pred.shape:
-        raise ValueError("y_true and y_pred must have the same shape.")
-
-    return np.mean(np.abs(y_true - y_pred) <= tolerance)
-
-
-def evaluate_model(model, data_loader, device, transformation_matrix=None, evaluate_transform=False):
+def evaluate_model(model, data_loader, device):
     model.eval()
 
-    errors = []
-    accuracies = []
-    precisions = []
-    percentile_accuracies = []
+    abs_error_sum = 0.0
+    sq_error_sum = 0.0
+    bad_1_count = 0
+    bad_3_count = 0
+    d1_count = 0
+    valid_count = 0
     image_infos = []
 
     with torch.no_grad():
         for batch in tqdm(data_loader, desc="Evaluating", unit="batch", leave=False):
             images = batch["image"].to(device)
-            true_disparities = batch["disparity"].to(device)
+            targets = batch["disparity"].to(device)
 
             predictions = model(images)
-
-            if predictions.shape != true_disparities.shape:
-                predictions = torch.nn.functional.interpolate(
+            if predictions.shape != targets.shape:
+                predictions = F.interpolate(
                     predictions,
-                    size=true_disparities.shape[2:],
+                    size=targets.shape[2:],
                     mode="bilinear",
-                    align_corners=False
+                    align_corners=False,
                 )
 
-            if evaluate_transform and transformation_matrix is not None:
-                predictions = apply_transformation(predictions, transformation_matrix)
-
-            true_flat = true_disparities.view(-1).cpu().numpy()
-            pred_flat = predictions.view(-1).cpu().numpy()
-
-            mse_error = mean_squared_error(true_flat, pred_flat)
-            rmse_error = np.sqrt(mse_error)
-            binary_true = true_flat > 0.5
-            binary_pred = pred_flat > 0.5
-
-            accuracy = accuracy_score(binary_true, binary_pred)
-            precision = precision_score(
-                binary_true,
-                binary_pred,
-                average="macro",
-                zero_division=1
+            valid = (
+                (targets > 0)
+                & torch.isfinite(targets)
+                & torch.isfinite(predictions)
             )
-            pct_accuracy = percentile_accuracy(true_flat, pred_flat, tolerance=0.25)
 
-            errors.append(rmse_error)
-            accuracies.append(accuracy)
-            precisions.append(precision)
-            percentile_accuracies.append(pct_accuracy)
+            if valid.any():
+                error = torch.abs(predictions - targets)
+                relative_error = error / torch.clamp(targets, min=1e-6)
 
-            image_infos.append(
-                (
-                    images.cpu(),
-                    true_disparities.cpu(),
-                    predictions.cpu(),
-                    rmse_error
+                abs_error_sum += error[valid].sum().item()
+                sq_error_sum += (error[valid] ** 2).sum().item()
+                bad_1_count += (error[valid] > 1.0).sum().item()
+                bad_3_count += (error[valid] > 3.0).sum().item()
+                d1_count += (
+                    (error[valid] > 3.0)
+                    & (relative_error[valid] > 0.05)
+                ).sum().item()
+                valid_count += valid.sum().item()
+
+            for i in range(images.shape[0]):
+                sample_valid = valid[i]
+                if sample_valid.any():
+                    sample_error = torch.abs(predictions[i] - targets[i])
+                    sample_rmse = torch.sqrt(
+                        (sample_error[sample_valid] ** 2).mean()
+                    ).item()
+                else:
+                    sample_rmse = math.inf
+
+                image_infos.append(
+                    (
+                        images[i].cpu(),
+                        targets[i].cpu(),
+                        predictions[i].cpu(),
+                        sample_rmse,
+                    )
                 )
-            )
 
-    return errors, accuracies, precisions, percentile_accuracies, image_infos
+    if valid_count == 0:
+        raise ValueError("No valid disparity pixels were found during evaluation.")
+
+    metrics = {
+        "valid_pixels": int(valid_count),
+        "epe": abs_error_sum / valid_count,
+        "rmse": math.sqrt(sq_error_sum / valid_count),
+        "bad_1": bad_1_count / valid_count,
+        "bad_3": bad_3_count / valid_count,
+        "d1": d1_count / valid_count,
+    }
+
+    return metrics, image_infos
 
 
 def display_image_results(image_infos):
@@ -125,16 +127,16 @@ def display_image_results(image_infos):
     if len(image_infos) == 1:
         axs = np.expand_dims(axs, axis=0)
 
-    for idx, (images, true_disp, pred_disp, error) in enumerate(image_infos):
-        axs[idx, 0].imshow(images[0].permute(1, 2, 0))
-        axs[idx, 0].set_title(f"Original Image - RMSE: {error:.2f}")
+    for idx, (image, true_disp, pred_disp, error) in enumerate(image_infos):
+        axs[idx, 0].imshow(image.permute(1, 2, 0))
+        axs[idx, 0].set_title(f"Original - RMSE: {error:.2f}")
         axs[idx, 0].axis("off")
 
-        axs[idx, 1].imshow(true_disp[0].squeeze(), cmap="plasma")
+        axs[idx, 1].imshow(true_disp.squeeze(), cmap="plasma")
         axs[idx, 1].set_title("Target Disparity")
         axs[idx, 1].axis("off")
 
-        axs[idx, 2].imshow(pred_disp[0].squeeze(), cmap="plasma")
+        axs[idx, 2].imshow(pred_disp.squeeze(), cmap="plasma")
         axs[idx, 2].set_title("Predicted Disparity")
         axs[idx, 2].axis("off")
 

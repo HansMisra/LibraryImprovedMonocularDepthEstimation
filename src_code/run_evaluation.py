@@ -1,93 +1,67 @@
 import os
+
 import numpy as np
 import torch
-from torch.utils.data import DataLoader
-from torchvision.transforms import ToTensor
+from torch.utils.data import DataLoader, Subset
 
-from data_utils import KITTIDataset
+from data_utils import KITTIDataset, eval_transforms
+from evaluate import display_image_results, evaluate_model
 from load_model import load_model
-from evaluate import evaluate_model, display_image_results
+from split_utils import load_or_create_split
 
- 
+
 def run_evaluation():
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    data_dir = os.path.join(
+    image_dir = os.path.join(
         script_dir,
         "kitti_data",
         "data_scene_flow",
-        "testing",
-        "image_2"
+        "training",
+        "image_2",
     )
-
     disparity_dir = os.path.join(
         script_dir,
         "kitti_data",
         "data_scene_flow",
-        "testing",
-        "test_disp"
+        "training",
+        "disp_occ_0",
     )
-
     model_path = os.path.join(script_dir, "model_weights.pth")
+    split_path = os.path.join(script_dir, "split.json")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Running on device: {device}")
 
-    if not os.path.exists(data_dir):
-        print(f"Image directory not found: {data_dir}")
-        return
+    dataset = KITTIDataset(
+        image_dir,
+        disparity_dir,
+        transform=eval_transforms,
+    )
 
-    if not os.path.exists(disparity_dir):
-        print(f"Disparity directory not found: {disparity_dir}")
-        return
-
-    if not os.path.exists(model_path):
-        print(f"Model weights not found: {model_path}")
-        print("Train the model first, or place model_weights.pth in src_code.")
-        return
+    _, val_indices = load_or_create_split(dataset, split_path)
+    val_dataset = Subset(dataset, val_indices)
+    data_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
     model = load_model(model_path, "depthnet", device=device)
+    metrics, image_infos = evaluate_model(model, data_loader, device)
 
-    dataset = KITTIDataset( 
-        data_dir,
-        disparity_dir
-    )
+    finite_infos = [info for info in image_infos if np.isfinite(info[3])]
+    if finite_infos:
+        finite_infos.sort(key=lambda x: x[3])
+        selected = [
+            finite_infos[-1],
+            finite_infos[0],
+            finite_infos[len(finite_infos) // 2],
+        ]
+        display_image_results(selected)
 
-    data_loader = DataLoader(
-        dataset,
-        batch_size=4,
-        shuffle=False   
-    )
-
-    errors, accuracies, precisions, percentile_accuracies, image_infos = evaluate_model(
-        model,
-        data_loader,
-        device
-    )
-
-    if not errors:
-        print("No evaluation results were produced.")
-        return
-
-    max_error_idx = int(np.argmax(errors))
-    min_error_idx = int(np.argmin(errors))
-    median_error_idx = int(np.argsort(errors)[len(errors) // 2])
-
-    selected_infos = [
-        image_infos[max_error_idx],
-        image_infos[min_error_idx],
-        image_infos[median_error_idx]
-    ]
-
-    display_image_results(selected_infos)
-
-    print(f"Average RMSE: {np.mean(errors):.4f}")
-    print(f"Average Accuracy: {np.mean(accuracies):.4f}")
-    print(f"Average Precision: {np.mean(precisions):.4f}")
-    print(f"Percentile Accuracy within tolerance 0.25: {np.mean(percentile_accuracies):.4f}")
-    print(f"Max RMSE: {errors[max_error_idx]:.4f}")
-    print(f"Min RMSE: {errors[min_error_idx]:.4f}")
-    print(f"Median RMSE: {errors[median_error_idx]:.4f}")
+    print(f"Valid pixels: {metrics['valid_pixels']:,}")
+    print(f"EPE: {metrics['epe']:.4f} px")
+    print(f"RMSE: {metrics['rmse']:.4f} px")
+    print(f"Bad-1: {metrics['bad_1'] * 100:.2f}%")
+    print(f"Bad-3: {metrics['bad_3'] * 100:.2f}%")
+    print(f"D1: {metrics['d1'] * 100:.2f}%")
 
 
 if __name__ == "__main__":
