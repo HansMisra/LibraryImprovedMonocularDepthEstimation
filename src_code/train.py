@@ -1,20 +1,21 @@
-import torch
-from torch.utils.data import DataLoader
-from data_utils import KITTIDataset, image_transforms
-from model import DepthNet
-import torch.optim as optim
 import os
+
+import torch
 import torch.nn.functional as F
-import sys
+import torch.optim as optim
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-# Set the working directory to the script's directory
+from data_utils import KITTIDataset, train_transforms
+from model import DepthNet
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(script_dir)
 
+
 def train(image_dir, disparity_dir, epochs=10, batch_size=8, save_path=None):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    dataset = KITTIDataset(image_dir, disparity_dir, transform=image_transforms)
+    dataset = KITTIDataset(image_dir, disparity_dir, transform=train_transforms)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     model = DepthNet().to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -61,6 +62,7 @@ def train(image_dir, disparity_dir, epochs=10, batch_size=8, save_path=None):
         if save_path:
             torch.save(model.state_dict(), save_path)
             print(f"Model weights saved to {save_path}")
+
 
 if __name__ == '__main__':
     image_dir = os.path.join('kitti_data', 'data_scene_flow', 'training', 'image_2')

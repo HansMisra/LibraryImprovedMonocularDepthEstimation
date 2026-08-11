@@ -1,10 +1,12 @@
 import os
+import random
+
 import cv2
+import numpy as np
 import torch
+from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-from PIL import Image
-import numpy as np
 
 
 def load_image(file_path):
@@ -25,40 +27,79 @@ def load_disparity(file_path):
     return Image.fromarray(disparity)
 
 
-class HypotenuseSquareTransform:
-    def __init__(self, target_size=1300, rotate_degrees=0):
+class PairedSquareTransform:
+    def __init__(self, target_size=1300, rotation_range=0.0, rotation_probability=0.0):
         self.target_size = target_size
-        self.rotate_degrees = rotate_degrees
+        self.rotation_range = float(rotation_range)
+        self.rotation_probability = float(rotation_probability)
 
-    def __call__(self, img):
+    def _resize_and_pad(self, img, is_disparity=False):
         width, height = img.size
-        scaling_factor = self.target_size / max(width, height)
+        scale = self.target_size / max(width, height)
 
-        new_width = int(width * scaling_factor)
-        new_height = int(height * scaling_factor)
+        new_width = max(1, int(round(width * scale)))
+        new_height = max(1, int(round(height * scale)))
 
-        img = img.resize((new_width, new_height), Image.NEAREST)
+        resample = Image.Resampling.NEAREST if is_disparity else Image.Resampling.BILINEAR
+        img = img.resize((new_width, new_height), resample=resample)
 
-        pad_horizontal = max((self.target_size - new_width) // 2, 0)
-        pad_vertical = max((self.target_size - new_height) // 2, 0)
+        if is_disparity:
+            disparity = np.asarray(img, dtype=np.float32) * scale
+            img = Image.fromarray(disparity)
 
-        img = transforms.Pad((pad_horizontal, pad_vertical), fill=0)(img)
+        pad_w = self.target_size - new_width
+        pad_h = self.target_size - new_height
+        left = pad_w // 2
+        right = pad_w - left
+        top = pad_h // 2
+        bottom = pad_h - top
 
-        if self.rotate_degrees != 0:
-            img = img.rotate(self.rotate_degrees, fillcolor=0)
-
-        img = img.resize((self.target_size, self.target_size), Image.NEAREST)
+        img = transforms.Pad((left, top, right, bottom), fill=0)(img)
         return img
 
+    def __call__(self, image, disparity):
+        image = self._resize_and_pad(image, is_disparity=False)
+        disparity = self._resize_and_pad(disparity, is_disparity=True)
 
-image_transforms = HypotenuseSquareTransform(rotate_degrees=45)
+        angle = 0.0
+        if self.rotation_range > 0 and random.random() < self.rotation_probability:
+            angle = random.uniform(-self.rotation_range, self.rotation_range)
+
+        if angle != 0.0:
+            image = image.rotate(
+                angle,
+                resample=Image.Resampling.BILINEAR,
+                fillcolor=0
+            )
+            disparity = disparity.rotate(
+                angle,
+                resample=Image.Resampling.NEAREST,
+                fillcolor=0
+            )
+
+        return image, disparity
+
+
+train_transforms = PairedSquareTransform(
+    target_size=1300,
+    rotation_range=10.0,
+    rotation_probability=0.5
+)
+
+eval_transforms = PairedSquareTransform(
+    target_size=1300,
+    rotation_range=0.0,
+    rotation_probability=0.0
+)
+
+image_transforms = train_transforms
 
 
 class KITTIDataset(Dataset):
     def __init__(self, image_dir, disparity_dir, transform=None):
         self.image_dir = image_dir
         self.disparity_dir = disparity_dir
-        self.transform = transform if transform is not None else image_transforms
+        self.transform = transform if transform is not None else eval_transforms
         self.to_tensor = transforms.ToTensor()
 
         if not os.path.exists(image_dir):
@@ -97,8 +138,7 @@ class KITTIDataset(Dataset):
         disparity = load_disparity(disparity_path)
 
         if self.transform:
-            image = self.transform(image)
-            disparity = self.transform(disparity)
+            image, disparity = self.transform(image, disparity)
 
         image_tensor = image if torch.is_tensor(image) else self.to_tensor(image)
 
