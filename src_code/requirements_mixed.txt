@@ -1,0 +1,10 @@
+torch
+torchvision
+opencv-contrib-python
+numpy
+matplotlib
+scikit-learn
+pillow
+tqdm
+transformers
+h5py
